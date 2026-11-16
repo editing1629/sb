@@ -1,0 +1,67 @@
+
+# N-Queens using Backtracking
+
+n = int(input("Enter number of Queens: "))
+col = int(input("Enter column for first Queen (1 to n): ")) - 1
+
+board = [[0] * n for i in range(n)]
+
+# Check safe position
+def safe(row, col):
+    for i in range(row):
+        if board[i][col] == 1:
+            return False
+
+    for i, j in zip(range(row-1, -1, -1), range(col-1, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    for i, j in zip(range(row-1, -1, -1), range(col+1, n)):
+        if board[i][j] == 1:
+            return False
+
+    return True
+
+# Solve using Backtracking
+def solve(row):
+    if row == n:
+        return True
+
+    for c in range(n):
+        if safe(row, c):
+            board[row][c] = 1
+
+            if solve(row + 1):
+                return True
+
+            board[row][c] = 0
+
+    return False
+
+# Place first Queen
+if n > 0 and 0 <= col < n:
+    board[0][col] = 1
+
+    if solve(1):
+        print("\nN-Queens Solution:")
+        for row in board:
+            print(row)
+    else:
+        print("No solution exists")
+else:
+    print("Invalid input")
+
+
+# Sample Output:
+# Enter number of Queens: 8
+# Enter column for first Queen (1 to n): 1
+#
+# N-Queens Solution:
+# [1, 0, 0, 0, 0, 0, 0, 0]
+# [0, 0, 0, 0, 1, 0, 0, 0]
+# [0, 0, 0, 0, 0, 0, 0, 1]
+# [0, 0, 0, 0, 0, 1, 0, 0]
+# [0, 0, 1, 0, 0, 0, 0, 0]
+# [0, 0, 0, 0, 0, 0, 1, 0]
+# [0, 1, 0, 0, 0, 0, 0, 0]
+# [0, 0, 0, 1, 0, 0, 0, 0]

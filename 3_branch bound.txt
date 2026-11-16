@@ -1,0 +1,79 @@
+
+import heapq
+
+# Calculate upper bound
+def bound(i, profit, weight):
+    if weight >= capacity:
+        return profit
+
+    b = profit
+    w = weight
+
+    while i < n and w + items[i][1] <= capacity:
+        w += items[i][1]
+        b += items[i][0]
+        i += 1
+
+    if i < n:
+        b += (capacity - w) * items[i][0] / items[i][1]
+
+    return b
+
+
+# Accept input
+n = int(input("Enter number of items: "))
+items = []
+
+for i in range(n):
+    p = int(input("Enter profit: "))
+    w = int(input("Enter weight: "))
+    items.append((p, w))
+
+capacity = int(input("Enter knapsack capacity: "))
+
+# Sort by profit/weight ratio
+items.sort(key=lambda x: x[0] / x[1], reverse=True)
+
+# Initialize priority queue
+pq = []
+heapq.heappush(pq, (-bound(0, 0, 0), 0, 0, 0))
+
+max_profit = 0
+
+# Branch and Bound
+while pq:
+    neg_b, i, p, w = heapq.heappop(pq)
+
+    if -neg_b <= max_profit or i == n:
+        continue
+
+    # Include next item
+    np = p + items[i][0]
+    nw = w + items[i][1]
+
+    if nw <= capacity:
+        max_profit = max(max_profit, np)
+        b = bound(i + 1, np, nw)
+
+        if b > max_profit:
+            heapq.heappush(pq, (-b, i + 1, np, nw))
+
+    # Exclude next item
+    b = bound(i + 1, p, w)
+
+    if b > max_profit:
+        heapq.heappush(pq, (-b, i + 1, p, w))
+
+print("Maximum Profit:", max_profit)
+
+
+# Sample Output:
+# Enter number of items: 3
+# Enter profit: 60
+# Enter weight: 10
+# Enter profit: 100
+# Enter weight: 20
+# Enter profit: 120
+# Enter weight: 30
+# Enter knapsack capacity: 50
+# Maximum Profit: 220
