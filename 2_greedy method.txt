@@ -1,0 +1,40 @@
+# Fractional Knapsack using Greedy Method
+
+n = int(input("Enter number of items: "))
+
+items = []
+
+for i in range(n):
+    profit = int(input("Enter profit: "))
+    weight = int(input("Enter weight: "))
+    ratio = profit / weight
+    items.append((profit, weight, ratio))
+
+capacity = int(input("Enter knapsack capacity: "))
+
+# Sort items by profit/weight ratio
+items.sort(key=lambda x: x[2], reverse=True)
+
+total_profit = 0
+
+for profit, weight, ratio in items:
+    if capacity >= weight:
+        total_profit += profit
+        capacity -= weight
+    else:
+        total_profit += ratio * capacity
+        break
+
+print("Maximum Profit:", total_profit)
+
+
+# Sample Output:
+# Enter number of items: 3
+# Enter profit: 60
+# Enter weight: 10
+# Enter profit: 100
+# Enter weight: 20
+# Enter profit: 120
+# Enter weight: 30
+# Enter knapsack capacity: 50
+# Maximum Profit: 240.0

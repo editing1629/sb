@@ -1,0 +1,101 @@
+# Given a bank customer, build a neural network-based classifier
+# that can determine whether they will leave or not in the next 6 months.
+
+# Step 1: Import Required Libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+# Step 2: Read the Dataset
+df = pd.read_csv("Churn_Modelling.csv")
+
+# Display dataset information
+print(df.head())
+print(df.info())
+print(df.describe())
+
+# Step 3: Remove Unnecessary Columns
+df = df.drop(["RowNumber", "CustomerId", "Surname"], axis=1)
+
+# Separate Features (X) and Target (y)
+X = df.drop("Exited", axis=1)
+y = df["Exited"]
+
+# Convert Categorical Variables into Numerical Variables
+X = pd.get_dummies(X, columns=["Geography", "Gender"], drop_first=True)
+
+# Convert True/False into 0/1
+X = X.astype(float)
+
+# Step 4: Split Dataset into Training and Testing Sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.20,
+    random_state=42
+)
+
+# Step 5: Normalize the Data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Step 6: Import TensorFlow Libraries
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Input, Dense
+
+# Build the Neural Network
+model = Sequential()
+
+# Input Layer
+model.add(Input(shape=(X_train.shape[1],)))
+
+# First Hidden Layer
+model.add(Dense(16, activation="relu"))
+
+# Second Hidden Layer
+model.add(Dense(8, activation="relu"))
+
+# Output Layer
+model.add(Dense(1, activation="sigmoid"))
+
+# Display Model Structure
+model.summary()
+
+# Step 7: Compile the Model
+model.compile(
+    optimizer="adam",
+    loss="binary_crossentropy",
+    metrics=["accuracy"]
+)
+
+# Step 8: Train the Model
+history = model.fit(
+    X_train,
+    y_train,
+    epochs=50,
+    batch_size=32,
+    validation_split=0.2,
+    verbose=1
+)
+
+# Step 9: Make Predictions
+y_pred_probability = model.predict(X_test)
+
+# Convert Probabilities into 0 or 1
+y_pred = (y_pred_probability >= 0.5).astype(int)
+
+# Step 10: Calculate Accuracy Score
+accuracy = accuracy_score(y_test, y_pred)
+print("\nAccuracy:", accuracy)
+
+# Step 11: Display Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+print("\nConfusion Matrix:")
+print(cm)
+
+# Step 12: Display Classification Report
+from sklearn.metrics import classification_report
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))

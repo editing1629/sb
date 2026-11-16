@@ -1,0 +1,119 @@
+
+# 0/1 Knapsack using Branch and Bound
+
+import heapq
+
+# Function to calculate the upper bound
+def calculate_bound(node, n, capacity, items):
+    if node[2] >= capacity:
+        return 0
+
+    profit_bound = node[1]
+    total_weight = node[2]
+    level = node[0] + 1
+
+    # Add complete items while capacity permits
+    while level < n and total_weight + items[level][1] <= capacity:
+        total_weight += items[level][1]
+        profit_bound += items[level][0]
+        level += 1
+
+    # Add a fraction of the next item
+    if level < n:
+        profit_bound += (
+            (capacity - total_weight) *
+            items[level][0] / items[level][1]
+        )
+
+    return profit_bound
+
+
+# Accept input
+n = int(input("Enter number of items: "))
+
+items = []
+
+for i in range(n):
+    profit = int(input("Enter profit: "))
+    weight = int(input("Enter weight: "))
+    items.append((profit, weight))
+
+capacity = int(input("Enter knapsack capacity: "))
+
+# Sort items by profit/weight ratio
+items.sort(key=lambda x: x[0] / x[1], reverse=True)
+
+# Priority queue: highest bound is explored first
+# Node format: (level, profit, weight, bound)
+root = (-1, 0, 0, 0)
+
+root_bound = calculate_bound(root, n, capacity, items)
+
+pq = []
+heapq.heappush(pq, (-root_bound, root))
+
+max_profit = 0
+
+# Branch and Bound process
+while pq:
+    neg_bound, node = heapq.heappop(pq)
+
+    level, profit, weight, bound = node
+
+    # Explore only promising nodes
+    if -neg_bound <= max_profit:
+        continue
+
+    next_level = level + 1
+
+    if next_level >= n:
+        continue
+
+    item_profit, item_weight = items[next_level]
+
+    # Branch 1: Include the next item
+    new_weight = weight + item_weight
+    new_profit = profit + item_profit
+
+    if new_weight <= capacity:
+        max_profit = max(max_profit, new_profit)
+
+        include_node = (
+            next_level, new_profit, new_weight, 0
+        )
+
+        include_bound = calculate_bound(
+            include_node, n, capacity, items
+        )
+
+        if include_bound > max_profit:
+            heapq.heappush(
+                pq, (-include_bound, include_node)
+            )
+
+    # Branch 2: Exclude the next item
+    exclude_node = (next_level, profit, weight, 0)
+
+    exclude_bound = calculate_bound(
+        exclude_node, n, capacity, items
+    )
+
+    if exclude_bound > max_profit:
+        heapq.heappush(
+            pq, (-exclude_bound, exclude_node)
+        )
+
+# Display result
+print("Maximum Profit:", max_profit)
+
+
+# Sample Output:
+# Enter number of items: 3
+# Enter profit: 60
+# Enter weight: 10
+# Enter profit: 100
+# Enter weight: 20
+# Enter profit: 120
+# Enter weight: 30
+# Enter knapsack capacity: 50
+# Maximum Profit: 220
